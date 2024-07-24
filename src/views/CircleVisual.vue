@@ -1,200 +1,45 @@
 <template>
-  <div id="app" class="container mt-4">
-    <div class="row">
-      <div class="col-md-8">
-        <div class="card">
-          <div class="card-body">
-            <canvas ref="canvas" width="800" height="600"></canvas>
-          </div>
-        </div>
-        <div class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title">Frequency Range</h5>
-            <div class="form-group">
-              <label for="minFrequency"
-                >Min Frequency: {{ frequencyRange[0] }}</label
-              >
-              <input
-                type="range"
-                class="form-control-range"
-                id="minFrequency"
-                v-model.number="frequencyRange[0]"
-                :min="0"
-                :max="bufferLength - 1"
-                @input="updateFrequencyRange"
-              />
-            </div>
-            <div class="form-group">
-              <label for="maxFrequency"
-                >Max Frequency: {{ frequencyRange[1] }}</label
-              >
-              <input
-                type="range"
-                class="form-control-range"
-                id="maxFrequency"
-                v-model.number="frequencyRange[1]"
-                :min="0"
-                :max="bufferLength - 1"
-                @input="updateFrequencyRange"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title">Pattern</h5>
-            <select v-model="pattern" class="form-control mb-2">
-              <option value="0">Pattern 0</option>
-              <option value="1">Pattern 1</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title">Controls</h5>
-            <button @click="toggleVisualizer" class="btn btn-primary mb-2">
-              {{ isRunning ? "Stop Visualizer" : "Start Visualizer" }}
-            </button>
-            <button @click="openInNewWindow" class="btn btn-secondary mb-2">
-              Open in New Window
-            </button>
-          </div>
-        </div>
-        <div class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title">Visualization Color</h5>
-            <input
-              type="color"
-              v-model="color"
-              @change="updateColor"
-              class="form-control mb-2"
-            />
-            <input
-              type="text"
-              v-model="colorCode"
-              @input="updateColorFromCode"
-              placeholder="Enter color code"
-              class="form-control"
-            />
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Background Settings</h5>
-            <div class="form-check mb-2">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                v-model="transparentBackground"
-                id="transparentBackground"
-              />
-              <label class="form-check-label" for="transparentBackground">
-                Transparent Background
-              </label>
-            </div>
-            <input
-              type="color"
-              v-model="backgroundColor"
-              @change="updateBackgroundColor"
-              class="form-control mb-2"
-              :disabled="transparentBackground"
-            />
-            <input
-              type="text"
-              v-model="backgroundColorCode"
-              @input="updateBackgroundColorFromCode"
-              placeholder="Enter background color code"
-              class="form-control"
-              :disabled="transparentBackground"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <BaseVisualizer ref="baseVisualizer" :canvas-width="600" :canvas-height="400" />
 </template>
 
 <script>
+import BaseVisualizer from "./BaseVisualizer.vue";
+
 export default {
   name: "CircleVisual",
-  data() {
-    return {
-      audioContext: null,
-      analyser: null,
-      dataArray: null,
-      bufferLength: 256,
-      canvas: null,
-      canvasCtx: null,
-      drawVisual: null,
-      color: "#00FFFF",
-      colorCode: "#00FFFF",
-      backgroundColor: "#00FF00",
-      backgroundColorCode: "#00FF00",
-      transparentBackground: true,
-      newWindow: null,
-      isRunning: false,
-      frequencyRange: [0, 255],
-      pattern: 0,
-    };
+  components: {
+    BaseVisualizer,
+  },
+  mounted() {
+    this.$refs.baseVisualizer.draw = this.draw;
   },
   methods: {
-    async setupAudio() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-        this.audioContext = new (window.AudioContext ||
-          window.webkitAudioContext)();
-        const source = this.audioContext.createMediaStreamSource(stream);
-        this.analyser = this.audioContext.createAnalyser();
-        source.connect(this.analyser);
-        this.analyser.fftSize = this.bufferLength * 2;
-        this.dataArray = new Uint8Array(this.bufferLength);
-
-        this.canvas = this.$refs.canvas;
-        this.canvasCtx = this.canvas.getContext("2d");
-      } catch (error) {
-        console.error("Error accessing microphone:", error);
-      }
-    },
-    toggleVisualizer() {
-      if (this.isRunning) {
-        this.stopVisualizer();
-      } else {
-        this.startVisualizer();
-      }
-    },
-    async startVisualizer() {
-      if (!this.audioContext) {
-        await this.setupAudio();
-      }
-      this.isRunning = true;
-      this.draw();
-    },
-    stopVisualizer() {
-      this.isRunning = false;
-      cancelAnimationFrame(this.drawVisual);
-    },
     draw() {
-      if (!this.isRunning) return;
+      const baseVisualizer = this.$refs.baseVisualizer;
+      if (!baseVisualizer || !baseVisualizer.isRunning) return;
 
-      this.drawVisual = requestAnimationFrame(this.draw);
+      this.$refs.baseVisualizer.drawVisual = requestAnimationFrame(this.draw);
 
-      this.analyser.getByteFrequencyData(this.dataArray);
+      const analyser = this.$refs.baseVisualizer.analyser;
+      const dataArray = this.$refs.baseVisualizer.dataArray;
+      const canvas = this.$refs.baseVisualizer.canvas;
+      const canvasCtx = this.$refs.baseVisualizer.canvasCtx;
+      const color = this.$refs.baseVisualizer.color;
+      const backgroundColor = this.$refs.baseVisualizer.backgroundColor;
+      const transparentBackground = this.$refs.baseVisualizer.transparentBackground;
+      const bufferLength = this.$refs.baseVisualizer.bufferLength;
+      const frequencyRange = this.$refs.baseVisualizer.frequencyRange;
+      const visualizationStyle = this.$refs.baseVisualizer.visualizationStyle;
+      const pattern = this.$refs.baseVisualizer.pattern;
 
-      const canvas = this.newWindow
-        ? this.newWindow.document.querySelector("canvas")
-        : this.canvas;
-      const canvasCtx = canvas.getContext("2d");
+      analyser.getByteFrequencyData(dataArray);
 
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (this.transparentBackground) {
+      if (transparentBackground) {
         canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
       } else {
-        canvasCtx.fillStyle = this.backgroundColor;
+        canvasCtx.fillStyle = backgroundColor;
         canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
@@ -205,72 +50,45 @@ export default {
       canvasCtx.beginPath();
       canvasCtx.setLineDash([3, 9]);
       canvasCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      canvasCtx.strokeStyle = this.color;
+      canvasCtx.strokeStyle = color;
       canvasCtx.lineWidth = 1.5;
       canvasCtx.stroke();
       canvasCtx.setLineDash([]);
 
-      const [startFreq, endFreq] = this.frequencyRange;
-      const frequencyStep = (endFreq - startFreq) / this.bufferLength;
+      const [startFreq, endFreq] = frequencyRange;
+      const frequencyStep = (endFreq - startFreq) / bufferLength;
 
-      for (let i = 0; i < this.bufferLength; i++) {
+      for (let i = 0; i < bufferLength; i++) {
         let dataIndex = 0;
-        if (this.pattern === 0) {
+        if (pattern === "0") {
           dataIndex = Math.floor(startFreq + i * frequencyStep);
         } else {
-          const lowerHalfLength = Math.floor(this.bufferLength / 2);
+          const lowerHalfLength = Math.floor(bufferLength / 2);
           dataIndex = i % lowerHalfLength;
         }
 
-        const angle = (i / this.bufferLength) * 2 * Math.PI;
-        const barHeight = this.dataArray[dataIndex] / 3;
+        const angle = (i / bufferLength) * 2 * Math.PI;
+        const barHeight = dataArray[dataIndex] / 3;
         const x = centerX + radius * Math.cos(angle);
         const y = centerY + radius * Math.sin(angle);
         const xEnd = centerX + (radius + barHeight) * Math.cos(angle);
         const yEnd = centerY + (radius + barHeight) * Math.sin(angle);
 
         canvasCtx.beginPath();
-        canvasCtx.moveTo(x, y);
-        canvasCtx.lineTo(xEnd, yEnd);
-        canvasCtx.strokeStyle = this.color;
-        canvasCtx.lineWidth = 1.5;
-        canvasCtx.stroke();
+
+        if (visualizationStyle === 'line') {
+          canvasCtx.moveTo(x, y);
+          canvasCtx.lineTo(xEnd, yEnd);
+          canvasCtx.strokeStyle = color;
+          canvasCtx.lineWidth = 1.5;
+          canvasCtx.stroke();
+        } else if (visualizationStyle === 'dot') {
+          canvasCtx.arc(xEnd, yEnd, 2, 0, 2 * Math.PI, false);
+          canvasCtx.fillStyle = color;
+          canvasCtx.fill();
+        }
       }
-    },
-    updateColor(event) {
-      this.color = event.target.value;
-      this.colorCode = this.color;
-    },
-    updateColorFromCode() {
-      if (/^#[0-9A-F]{6}$/i.test(this.colorCode)) {
-        this.color = this.colorCode;
-      }
-    },
-    updateBackgroundColor(event) {
-      this.backgroundColor = event.target.value;
-      this.backgroundColorCode = this.backgroundColor;
-    },
-    updateBackgroundColorFromCode() {
-      if (/^#[0-9A-F]{6}$/i.test(this.backgroundColorCode)) {
-        this.backgroundColor = this.backgroundColorCode;
-      }
-    },
-    openInNewWindow() {
-      this.newWindow = window.open("", "Visualizer", "width=800,height=600");
-      this.newWindow.document.body.innerHTML =
-        '<canvas width="800" height="600"></canvas>';
-      this.newWindow.document.body.style.margin = "0";
-      this.newWindow.document.body.style.padding = "0";
     },
   },
 };
 </script>
-
-<style>
-@import "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css";
-
-canvas {
-  width: 100%;
-  height: auto;
-}
-</style>
