@@ -11,39 +11,45 @@
             ></canvas>
           </div>
         </div>
+
         <div class="card mb-3">
           <div class="card-body">
             <h5 class="card-title">Frequency Range</h5>
-            <div class="form-group">
-              <label for="minFrequency"
-                >Min Frequency: {{ frequencyRange[0] }}</label
-              >
-              <input
-                type="range"
-                class="form-control-range"
-                id="minFrequency"
-                v-model.number="frequencyRange[0]"
-                :min="0"
-                :max="bufferLength - 1"
-                @input="updateFrequencyRange"
-              />
+            <div class="form-group row align-items-center">
+              <label for="minFrequency" class="col-sm-4 col-form-label">
+                Min Frequency: {{ frequencyRange[0] }}
+              </label>
+              <div class="col-sm-8 col-form-item">
+                <input
+                  type="range"
+                  class="form-control-range"
+                  id="minFrequency"
+                  v-model.number="frequencyRange[0]"
+                  :min="0"
+                  :max="bufferLength - 1"
+                  @input="updateFrequencyRange"
+                />
+              </div>
             </div>
-            <div class="form-group">
-              <label for="maxFrequency"
-                >Max Frequency: {{ frequencyRange[1] }}</label
-              >
-              <input
-                type="range"
-                class="form-control-range"
-                id="maxFrequency"
-                v-model.number="frequencyRange[1]"
-                :min="0"
-                :max="bufferLength - 1"
-                @input="updateFrequencyRange"
-              />
+            <div class="form-group row align-items-center">
+              <label for="maxFrequency" class="col-sm-4 col-form-label">
+                Max Frequency: {{ frequencyRange[1] }}
+              </label>
+              <div class="col-sm-8 align-items-center">
+                <input
+                  type="range"
+                  class="form-control-range"
+                  id="maxFrequency"
+                  v-model.number="frequencyRange[1]"
+                  :min="0"
+                  :max="bufferLength - 1"
+                  @input="updateFrequencyRange"
+                />
+              </div>
             </div>
           </div>
         </div>
+
         <div class="card mb-3">
           <div class="card-body">
             <h5 class="card-title">Visualization Settings</h5>
@@ -64,12 +70,16 @@
         <div class="card mb-3">
           <div class="card-body">
             <h5 class="card-title">Controls</h5>
-            <button @click="toggleVisualizer" class="btn btn-primary mb-2">
-              {{ isRunning ? "Stop Visualizer" : "Start Visualizer" }}
-            </button>
-            <button @click="openInNewWindow" class="btn btn-secondary mb-2">
-              Open in New Window
-            </button>
+            <div class="d-flex flex-column">
+              <button @click="toggleVisualizer" class="btn btn-primary mb-2 py-3">
+                <i class="fas fa-play mr-2"></i>
+                <span class="fs-5">{{ isRunning ? "Stop Visualizer" : "Start Visualizer" }}</span>
+              </button>
+              <button @click="openInNewWindow" class="btn btn-secondary py-2">
+                <i class="fas fa-external-link-alt mr-2"></i>
+                Open in New Window
+              </button>
+            </div>
           </div>
         </div>
         <div class="card mb-3">
@@ -218,26 +228,27 @@ export default {
     },
     openInNewWindow() {
       this.newWindow = window.open("", "Visualizer", "width=800,height=600");
-      this.newWindow.document.body.innerHTML = '<canvas id="newCanvas" width="800" height="600"></canvas>';
+      this.newWindow.document.body.innerHTML =
+        '<canvas id="newCanvas" width="800" height="600"></canvas>';
       this.newWindow.document.body.style.margin = "0";
       this.newWindow.document.body.style.padding = "0";
-      
+
       // 创建新的 canvas 上下文
-      const newCanvas = this.newWindow.document.getElementById('newCanvas');
-      const newCanvasCtx = newCanvas.getContext('2d');
-      
+      const newCanvas = this.newWindow.document.getElementById("newCanvas");
+      const newCanvasCtx = newCanvas.getContext("2d");
+
       // 复制当前 canvas 的属性到新窗口
       this.canvas = newCanvas;
       this.canvasCtx = newCanvasCtx;
-      
+
       // 在新窗口中启动可视化
       this.startVisualizer();
-      
+
       // 添加关闭事件监听器
-      this.newWindow.addEventListener('beforeunload', () => {
+      this.newWindow.addEventListener("beforeunload", () => {
         this.stopVisualizer();
         this.canvas = this.$refs.canvas;
-        this.canvasCtx = this.$refs.canvas.getContext('2d');
+        this.canvasCtx = this.$refs.canvas.getContext("2d");
       });
     },
     draw() {
@@ -255,7 +266,9 @@ export default {
       }
       this.newWindow = null;
       this.canvas = this.$refs.canvas;
-      this.canvasCtx = this.$refs.canvas ? this.$refs.canvas.getContext('2d') : null;
+      this.canvasCtx = this.$refs.canvas
+        ? this.$refs.canvas.getContext("2d")
+        : null;
     },
   },
   beforeRouteLeave(to, from, next) {
@@ -264,10 +277,9 @@ export default {
     }
     next();
   },
-  beforeDestroy(){
+  beforeDestroy() {
     this.cleanupResources();
-
-  }
+  },
 };
 </script>
 
@@ -276,4 +288,9 @@ canvas {
   width: 100%;
   height: auto;
 }
+
+.form-control-range {
+  width: 100%;
+}
+
 </style>
