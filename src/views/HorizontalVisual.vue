@@ -4,7 +4,7 @@
       <div class="col-md-8">
         <div class="card">
           <div class="card-body">
-            <canvas ref="canvas" width="800" height="600"></canvas>
+            <canvas ref="canvas" width="800" height="200"></canvas>
           </div>
         </div>
         <div class="card mb-3">

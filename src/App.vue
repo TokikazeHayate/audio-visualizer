@@ -1,15 +1,16 @@
 <template>
   <div>
-    <h1>Audio Visualizer</h1>
-    <button @click="view = 'circle'">Circle Visual</button>
-    <button @click="view = 'horizontal'">Horizontal Visual</button>
-    <component :is="viewComponent"></component>
+    <navbar 
+    ></navbar>
+
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import CircleVisual from ".src/components/CircleVisual.vue";
-import HorizontalVisual from "./components/HorizontalVisual.vue";
+import Navbar from './components/Navbar.vue'
+import CircleVisual from "./views/CircleVisual.vue";
+import HorizontalVisual from "./views/HorizontalVisual.vue";
 
 export default {
   name: "App",
@@ -17,6 +18,9 @@ export default {
     return {
       view: "circle",
     };
+  },
+  components:{
+        Navbar,
   },
   computed: {
     viewComponent() {
