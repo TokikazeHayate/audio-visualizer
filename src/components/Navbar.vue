@@ -2,10 +2,10 @@
     <nav 
         :class="[`navbar-${theme}`, `bg-${theme}`, `navbar`, `navbar-expand-lg`]"
     >
-        <div class="container-fluid">
+        <div class="container-fluid d-flex flex-lg-row align-items-center">
             <a class="navbar-brand" href="#">Audio Visualizer</a>
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li>
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-flex flex-column flex-lg-row">
+                <li class="nav-item">
                     <router-link
                     to="/circle"
                     class="nav-link" 
@@ -14,7 +14,7 @@
                     :title="`This link goes to the circle page`"
                     >Circule</router-link>  
                 </li>
-                <li>
+                <li class="nav-item">
                     <router-link
                     to="/horizon"
                     class="nav-link" 
@@ -25,7 +25,7 @@
                 </li>
 
             </ul>
-            <form class="d-flex">
+            <form class="d-flex mt-2 mt-lg-0">
                 <button 
                     class="btn btn-primary" 
                     @click.prevent="changeTheme()"
@@ -81,6 +81,17 @@ export default {
 </script>
 
 <style>
+.navbar{
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;  
+  align-items: center;
+
+  width: 100%;
+  z-index: 1000; /* 確保 Navbar 在其他元素之上 */
+}
 .active{
     border-bottom: 2px solid #0069d9; /* 这里你可以根据需要调整颜色和底线的厚度 */
   }
