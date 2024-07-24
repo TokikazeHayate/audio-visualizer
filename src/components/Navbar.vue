@@ -85,10 +85,6 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  display: grid;
-  grid-template-columns: 1fr auto;  
-  align-items: center;
-
   width: 100%;
   z-index: 1000; /* 確保 Navbar 在其他元素之上 */
 }
